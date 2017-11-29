@@ -1,6 +1,6 @@
 -- title:  Fuga das Sombras
 -- author: Alura
--- desc:   RPG de ação em 2D
+-- desc:   RPG de acao em 2D
 -- script: lua
 
 jogador = {
@@ -11,11 +11,43 @@ jogador = {
 }
 
 function TIC()
+  atualiza()
+  desenha()
+end
+
+function atualiza()
+    -- botão 0 -> seta para cima
+    if btn(0) then
+      jogador.y = jogador.y - 1
+    end
+
+    -- botão 1 -> seta para baixo
+    if btn(1) then
+      jogador.y = jogador.y + 1
+    end
+
+    -- botão 2 -> seta para esquerda
+    if btn(2) then
+      jogador.x = jogador.x - 1
+    end
+
+    -- botão 3 -> seta para direita
+    if btn(3) then
+      jogador.x = jogador.x + 1
+    end
+end
+
+function desenha()
+  cls() -- limpa a tela, pode passar uma cor como parâmetro
+  desenhaObjeto(jogador)
+end
+
+function desenhaObjeto(objeto)
   spr(
-    jogador.sprite,
-    jogador.x - 8,
-    jogador.y - 8,
-    jogador.corTransparente,
+    objeto.sprite,
+    objeto.x - 8,
+    objeto.y - 8,
+    objeto.corTransparente,
     1, -- escala 1
     0, -- sem espelhar
     0, -- sem rotacionar
