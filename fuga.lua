@@ -3,6 +3,11 @@
 -- desc:   RPG de acao em 2D
 -- script: lua
 
+Constantes = {
+  MAPA_LARGURA_TELA = 30,
+  MAPA_ALTURA_TELA = 17
+}
+
 jogador = {
   sprite = 256,
   x = 120,
@@ -39,6 +44,7 @@ end
 
 function desenha()
   cls() -- limpa a tela, pode passar uma cor como parâmetro
+  desenhaMapa()
   desenhaObjeto(jogador)
 end
 
@@ -53,5 +59,16 @@ function desenhaObjeto(objeto)
     0, -- sem rotacionar
     2, -- largura em blocos 2 (cada bloco eh 8x8)
     2  -- altura em blocos 2
+  )
+end
+
+function desenhaMapa()
+  map(
+    0,  -- coordenada x do bloco inicial
+    0,  -- coordenada y do bloco inicial
+    Constantes.MAPA_LARGURA_TELA, -- largura do mapa em blocos
+    Constantes.MAPA_ALTURA_TELA,  -- altura do mapa em blocos
+    0, -- posicao x de onde o mapa vai ser desenhado
+    0  -- posicao y de onde o mapa vai ser desenhado
   )
 end
