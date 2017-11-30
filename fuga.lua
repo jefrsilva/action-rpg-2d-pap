@@ -24,7 +24,7 @@ jogador = {
   sprite = 256,
   x = 120,
   y = 68,
-  corTransparente = 0
+  corTransparente = 6
 }
 
 function TIC()
