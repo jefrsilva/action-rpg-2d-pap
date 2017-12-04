@@ -4,6 +4,10 @@
 -- script: lua
 
 Constantes = {
+  SPRITE_JOGADOR =  256,
+
+  VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
+
   CIMA = 1,
   BAIXO = 2,
   ESQUERDA = 3,
@@ -20,11 +24,32 @@ Direcao = {
   {deltaX = 1, deltaY = 0}
 }
 
+AnimacaoJogador = {
+  { -- andando para cima
+    {sprite = 256},
+    {sprite = 258}
+  },
+  { -- andando para baixo
+    {sprite = 260},
+    {sprite = 262}
+  },
+  { -- andando para esquerda
+    {sprite = 264},
+    {sprite = 266}
+  },
+  { -- andando para direita
+    {sprite = 268},
+    {sprite = 270}
+  }
+}
+
 jogador = {
-  sprite = 256,
+  sprite = Constantes.SPRITE_JOGADOR,
   x = 120,
   y = 68,
-  corTransparente = 6
+  corTransparente = 6,
+  direcao = Constantes.BAIXO,
+  quadroDeAnimacao = 1
 }
 
 function TIC()
@@ -49,11 +74,25 @@ function atualizaJogador()
       moveJogadorPara(direcao[tecla + 1])
     end
   end
+
+  atualizaAnimacaoJogador()
+end
+
+function atualizaAnimacaoJogador()
+  if jogador.quadroDeAnimacao >= 3 then
+    jogador.quadroDeAnimacao = jogador.quadroDeAnimacao - 2
+  end
 end
 
 function desenha()
   cls() -- limpa a tela, pode passar uma cor como parâmetro
   desenhaMapa()
+  desenhaJogador()
+end
+
+function desenhaJogador()
+  local quadroDeAnimacao = math.floor(jogador.quadroDeAnimacao)
+  jogador.sprite = AnimacaoJogador[jogador.direcao][quadroDeAnimacao].sprite
   desenhaObjeto(jogador)
 end
 
@@ -90,6 +129,7 @@ function moveJogadorPara(indiceDirecao)
   if not temColisao(jogador, deltaX, deltaY) then
     jogador.x = jogador.x + deltaX
     jogador.y = jogador.y + deltaY
+    jogador.quadroDeAnimacao = jogador.quadroDeAnimacao + Constantes.VELOCIDADE_ANIMACAO_JOGADOR
   end
 end
 
