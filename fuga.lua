@@ -5,6 +5,7 @@
 
 Constantes = {
   SPRITE_JOGADOR =  256,
+  SPRITE_CHAVE = 364,
 
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
 
@@ -52,6 +53,13 @@ jogador = {
   quadroDeAnimacao = 1
 }
 
+objetos = {}
+
+function inicializa()
+  local chave = criaChave(3, 3)
+  table.insert(objetos, chave)
+end
+
 function TIC()
   atualiza()
   desenha()
@@ -87,6 +95,9 @@ end
 function desenha()
   cls() -- limpa a tela, pode passar uma cor como parâmetro
   desenhaMapa()
+  for indice, objeto in pairs(objetos) do
+    desenhaObjeto(objeto)
+  end
   desenhaJogador()
 end
 
@@ -179,3 +190,15 @@ function blocoEhParede(blocoId)
   end
   return false
 end
+
+function criaChave(linha, coluna)
+  local chave = {
+    sprite = Constantes.SPRITE_CHAVE,
+    corTransparente = 6,
+    x = (coluna * 8) + 8,
+    y = (linha * 8) + 8
+  }
+  return chave
+end
+
+inicializa()
