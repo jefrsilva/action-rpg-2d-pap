@@ -7,7 +7,12 @@ Constantes = {
   SPRITE_JOGADOR =  256,
   SPRITE_CHAVE = 364,
 
+  TIPO_JOGADOR = "JOGADOR",
+  TIPO_CHAVE = "CHAVE",
+
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
+
+  ID_SOM_CHAVE = 0,  
 
   CIMA = 1,
   BAIXO = 2,
@@ -50,7 +55,9 @@ jogador = {
   y = 68,
   corTransparente = 6,
   direcao = Constantes.BAIXO,
-  quadroDeAnimacao = 1
+  quadroDeAnimacao = 1,
+  tipo = Constantes.TIPO_JOGADOR,
+  chaves = 0
 }
 
 objetos = {}
@@ -145,6 +152,10 @@ function moveJogadorPara(indiceDirecao)
 end
 
 function temColisao(objeto, deltaX, deltaY)
+  if (temColisaoComObjeto(objeto, deltaX, deltaY)) then
+    return true
+  end
+
   local cantosDoObjeto = {
     superiorEsquerdo = {
       x = objeto.x - 8 + deltaX,
@@ -174,6 +185,57 @@ function temColisao(objeto, deltaX, deltaY)
   return false
 end
 
+function temColisaoComObjeto(objeto, deltaX, deltaY)
+  local objetoComDelta = {
+    x = objeto.x + deltaX,
+    y = objeto.y + deltaY
+  }
+  for indice, outroObjeto in pairs(objetos) do
+    if colide(objetoComDelta, outroObjeto) then
+      if objeto.tipo == Constantes.TIPO_JOGADOR then
+        if outroObjeto.tipo == Constantes.TIPO_CHAVE then
+          return fazColisaoJogadorComChave(objeto, outroObjeto, indice)
+        end
+      end
+    end
+  end
+  return false
+end
+
+function colide(objetoA, objetoB)
+  local esquerdaDeA = objetoA.x - 8
+  local direitaDeA = objetoA.x + 7
+  local cimaDeA = objetoA.y - 8
+  local baixoDeA = objetoA.y + 7
+
+  local esquerdaDeB = objetoB.x - 8
+  local direitaDeB = objetoB.x + 7
+  local cimaDeB = objetoB.y - 8
+  local baixoDeB = objetoB.y + 7
+
+  if esquerdaDeA <= direitaDeB and
+    direitaDeA >= esquerdaDeB and
+    cimaDeA <= baixoDeB and
+    baixoDeA >= cimaDeB then
+    return true
+  end
+  return false
+end
+
+function fazColisaoJogadorComChave(jogador, chave, indiceDaChave)
+  sfx(
+    Constantes.ID_SOM_CHAVE,
+    60, -- número da nota (12 notas por oitava)
+    32, -- duracao em quadros
+    0,  -- canal
+    8,  -- volume
+    1   -- velocidade
+  )
+  table.remove(objetos, indiceDaChave)
+  jogador.chaves = jogador.chaves + 1
+  return false
+end
+
 function temColisaoComMapa(ponto)
   local blocoX = ponto.x / 8
   local blocoY = ponto.y / 8
@@ -196,7 +258,8 @@ function criaChave(linha, coluna)
     sprite = Constantes.SPRITE_CHAVE,
     corTransparente = 6,
     x = (coluna * 8) + 8,
-    y = (linha * 8) + 8
+    y = (linha * 8) + 8,
+    tipo = Constantes.TIPO_CHAVE
   }
   return chave
 end
