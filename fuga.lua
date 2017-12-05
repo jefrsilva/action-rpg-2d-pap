@@ -6,13 +6,15 @@
 Constantes = {
   SPRITE_JOGADOR =  256,
   SPRITE_CHAVE = 364,
+  SPRITE_PORTA = 366,
 
   TIPO_JOGADOR = "JOGADOR",
   TIPO_CHAVE = "CHAVE",
+  TIPO_PORTA = "PORTA",
 
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
 
-  ID_SOM_CHAVE = 0,  
+  ID_SOM_CHAVE = 0,
 
   CIMA = 1,
   BAIXO = 2,
@@ -65,6 +67,9 @@ objetos = {}
 function inicializa()
   local chave = criaChave(3, 3)
   table.insert(objetos, chave)
+
+  local porta = criaPorta(28, 7)
+  table.insert(objetos, porta)
 end
 
 function TIC()
@@ -262,6 +267,17 @@ function criaChave(linha, coluna)
     tipo = Constantes.TIPO_CHAVE
   }
   return chave
+end
+
+function criaPorta(coluna, linha)
+  local porta = {
+    sprite = Constantes.SPRITE_PORTA,
+    corTransparente = 6,
+    x = (coluna * 8) + 8,
+    y = (linha * 8) + 8,
+    tipo = Constantes.TIPO_PORTA
+  }
+  return porta
 end
 
 inicializa()
