@@ -15,6 +15,7 @@ Constantes = {
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
 
   ID_SOM_CHAVE = 0,
+  ID_SOM_PORTA = 2,
 
   CIMA = 1,
   BAIXO = 2,
@@ -65,6 +66,24 @@ jogador = {
 objetos = {}
 
 function inicializa()
+  funcaoDeColisao = {
+    JOGADOR = {
+      JOGADOR = nil,
+      CHAVE = fazColisaoJogadorComChave,
+      PORTA = fazColisaoJogadorComPorta,
+    },
+    CHAVE = {
+      JOGADOR = nil,
+      CHAVE = nil,
+      PORTA = nil,
+    },
+    PORTA = {
+      JOGADOR = nil,
+      CHAVE = nil,
+      PORTA = nil,
+    }
+  }
+  
   local chave = criaChave(3, 3)
   table.insert(objetos, chave)
 
@@ -197,10 +216,9 @@ function temColisaoComObjeto(objeto, deltaX, deltaY)
   }
   for indice, outroObjeto in pairs(objetos) do
     if colide(objetoComDelta, outroObjeto) then
-      if objeto.tipo == Constantes.TIPO_JOGADOR then
-        if outroObjeto.tipo == Constantes.TIPO_CHAVE then
-          return fazColisaoJogadorComChave(objeto, outroObjeto, indice)
-        end
+      local fazColisao = funcaoDeColisao[objeto.tipo][outroObjeto.tipo]
+      if fazColisao ~= nil then
+        return fazColisao(objeto, outroObjeto, indice)
       end
     end
   end
@@ -239,6 +257,24 @@ function fazColisaoJogadorComChave(jogador, chave, indiceDaChave)
   table.remove(objetos, indiceDaChave)
   jogador.chaves = jogador.chaves + 1
   return false
+end
+
+function fazColisaoJogadorComPorta(jogador, porta, indiceDaPorta)
+  if jogador.chaves > 0 then
+    sfx(
+      Constantes.ID_SOM_PORTA,
+      36, -- número da nota (12 notas por oitava)
+      32, -- duracao em quadros
+      0,  -- canal
+      15, -- volume
+      1   -- velocidade
+    )
+
+    table.remove(objetos, indiceDaPorta)
+    jogador.chaves = jogador.chaves - 1
+    return false
+  end
+  return true
 end
 
 function temColisaoComMapa(ponto)
