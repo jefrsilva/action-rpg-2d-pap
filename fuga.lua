@@ -54,17 +54,6 @@ AnimacaoJogador = {
   }
 }
 
-jogador = {
-  sprite = Constantes.SPRITE_JOGADOR,
-  x = 120,
-  y = 68,
-  corTransparente = 6,
-  direcao = Constantes.BAIXO,
-  quadroDeAnimacao = 1,
-  tipo = Constantes.TIPO_JOGADOR,
-  chaves = 0
-}
-
 objetos = {}
 
 function inicializa()
@@ -73,22 +62,26 @@ function inicializa()
       JOGADOR = nil,
       CHAVE = fazColisaoJogadorComChave,
       PORTA = fazColisaoJogadorComPorta,
+      INIMIGO = fazColisaoJogadorComInimigo
     },
     CHAVE = {
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
+      INIMIGO = nil
     },
     PORTA = {
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
+      INIMIGO = nil
+    },
+    INIMIGO = {
+      JOGADOR = nil,
+      CHAVE = nil,
+      PORTA = nil,
+      INIMIGO = nil
     }
-  }
-
-  camera = {
-    x = 0,
-    y = 0
   }
 
   local chave = criaChave(3, 3)
@@ -99,6 +92,24 @@ function inicializa()
 
   local inimigo = criaInimigo(38, 7)
   table.insert(objetos, inimigo)
+end
+
+function resetaJogo()
+  jogador = {
+    sprite = Constantes.SPRITE_JOGADOR,
+    x = 120,
+    y = 68,
+    corTransparente = 6,
+    direcao = Constantes.BAIXO,
+    quadroDeAnimacao = 1,
+    tipo = Constantes.TIPO_JOGADOR,
+    chaves = 0
+  }
+
+  camera = {
+    x = 0,
+    y = 0
+  }
 end
 
 function TIC()
@@ -291,6 +302,10 @@ function fazColisaoJogadorComPorta(jogador, porta, indiceDaPorta)
     return false
   end
   return true
+end
+
+function fazColisaoJogadorComInimigo(jogador, inimigo, indiceDoInimigo)
+  resetaJogo()
 end
 
 function temColisaoComMapa(ponto)
