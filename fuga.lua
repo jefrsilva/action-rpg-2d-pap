@@ -83,7 +83,12 @@ function inicializa()
       PORTA = nil,
     }
   }
-  
+
+  camera = {
+    x = 0,
+    y = 0
+  }
+
   local chave = criaChave(3, 3)
   table.insert(objetos, chave)
 
@@ -98,6 +103,9 @@ end
 
 function atualiza()
   atualizaJogador()
+
+  camera.x = (jogador.x // 240) * 240
+  camera.y = (jogador.y // 136) * 136
 end
 
 function atualizaJogador()
@@ -141,8 +149,8 @@ end
 function desenhaObjeto(objeto)
   spr(
     objeto.sprite,
-    objeto.x - 8,
-    objeto.y - 8,
+    objeto.x - 8 - camera.x,
+    objeto.y - 8 - camera.y,
     objeto.corTransparente,
     1, -- escala 1
     0, -- sem espelhar
@@ -153,9 +161,12 @@ function desenhaObjeto(objeto)
 end
 
 function desenhaMapa()
+  local blocoX = camera.x // 8
+  local blocoY = camera.y // 8
+
   map(
-    0,  -- coordenada x do bloco inicial
-    0,  -- coordenada y do bloco inicial
+    blocoX, -- coordenada x do bloco inicial
+    blocoY, -- coordenada y do bloco inicial
     Constantes.MAPA_LARGURA_TELA, -- largura do mapa em blocos
     Constantes.MAPA_ALTURA_TELA,  -- altura do mapa em blocos
     0, -- posicao x de onde o mapa vai ser desenhado
