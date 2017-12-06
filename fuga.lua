@@ -78,25 +78,36 @@ function inicializa()
       JOGADOR = nil,
       CHAVE = fazColisaoJogadorComChave,
       PORTA = fazColisaoJogadorComPorta,
-      INIMIGO = fazColisaoJogadorComInimigo
+      INIMIGO = fazColisaoJogadorComInimigo,
+      ESPADA = nil
     },
     CHAVE = {
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
-      INIMIGO = nil
+      INIMIGO = nil,
+      ESPADA = nil
     },
     PORTA = {
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
-      INIMIGO = nil
+      INIMIGO = nil,
+      ESPADA = nil
     },
     INIMIGO = {
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
-      INIMIGO = nil
+      INIMIGO = nil,
+      ESPADA = nil
+    },
+    ESPADA = {
+      JOGADOR = nil,
+      CHAVE = nil,
+      PORTA = nil,
+      INIMIGO = fazColisaoEspadaComInimigo,
+      ESPADA = nil
     }
   }
 
@@ -182,6 +193,9 @@ function atualizaEspada()
     espada.x = jogador.x + DadosDaEspada[jogador.direcao].x
     espada.y = jogador.y + DadosDaEspada[jogador.direcao].y
     espada.sprite = DadosDaEspada[jogador.direcao].sprite
+
+    temColisao(espada, 0, 0)
+
     if espada.tempoAteDesaparecer > 0 then
       espada.tempoAteDesaparecer = espada.tempoAteDesaparecer - 1
     else
@@ -359,6 +373,11 @@ end
 
 function fazColisaoJogadorComInimigo(jogador, inimigo, indiceDoInimigo)
   resetaJogo()
+end
+
+function fazColisaoEspadaComInimigo(espada, inimigo, indiceDoInimigo)
+  table.remove(objetos, indiceDoInimigo)
+  return false
 end
 
 function temColisaoComMapa(ponto)
