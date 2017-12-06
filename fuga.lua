@@ -8,16 +8,19 @@ Constantes = {
   SPRITE_CHAVE = 364,
   SPRITE_PORTA = 366,
   SPRITE_INIMIGO = 292,
+  SPRITE_ESPADA = 320,
 
   TIPO_JOGADOR = "JOGADOR",
   TIPO_CHAVE = "CHAVE",
   TIPO_PORTA = "PORTA",
   TIPO_INIMIGO = "INIMIGO",
+  TIPO_ESPADA = "ESPADA",
 
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
 
   ID_SOM_CHAVE = 0,
   ID_SOM_PORTA = 2,
+  ID_SOM_ESPADA = 3,
 
   CIMA = 1,
   BAIXO = 2,
@@ -54,7 +57,20 @@ AnimacaoJogador = {
   }
 }
 
-objetos = {}
+DadosDaEspada = {
+  { -- ataque para cima (indice 1)
+    x = 0, y = -16, sprite = 324
+  },
+  { -- ataque para baixo (indice 2)
+    x = 0, y = 16, sprite = 332
+  },
+  { -- ataque para esquerda (indice 3)
+    x = -16, y = 0, sprite = 320
+  },
+  { -- ataque para direita (indice 4)
+    x = 16, y = 0, sprite = 328
+  }
+}
 
 function inicializa()
   funcaoDeColisao = {
@@ -84,17 +100,12 @@ function inicializa()
     }
   }
 
-  local chave = criaChave(3, 3)
-  table.insert(objetos, chave)
-
-  local porta = criaPorta(28, 7)
-  table.insert(objetos, porta)
-
-  local inimigo = criaInimigo(38, 7)
-  table.insert(objetos, inimigo)
+  resetaJogo()
 end
 
 function resetaJogo()
+  objetos = {}
+
   jogador = {
     sprite = Constantes.SPRITE_JOGADOR,
     x = 120,
@@ -106,10 +117,29 @@ function resetaJogo()
     chaves = 0
   }
 
+  espada = {
+    sprite = Constantes.SPRITE_ESPADA,
+    x = 0,
+    y = 0,
+    corTransparente = 0,
+    tipo = Constantes.TIPO_ESPADA,
+    visivel = false,
+    tempoAteDesaparecer = 0
+  }
+
   camera = {
     x = 0,
     y = 0
   }
+
+  local chave = criaChave(3, 3)
+  table.insert(objetos, chave)
+
+  local porta = criaPorta(28, 7)
+  table.insert(objetos, porta)
+
+  local inimigo = criaInimigo(38, 7)
+  table.insert(objetos, inimigo)
 end
 
 function TIC()
@@ -139,6 +169,25 @@ function atualizaJogador()
   end
 
   atualizaAnimacaoJogador()
+
+  if btn(4) then
+    fazAtaque()
+  end
+
+  atualizaEspada()
+end
+
+function atualizaEspada()
+  if espada.visivel then
+    espada.x = jogador.x + DadosDaEspada[jogador.direcao].x
+    espada.y = jogador.y + DadosDaEspada[jogador.direcao].y
+    espada.sprite = DadosDaEspada[jogador.direcao].sprite
+    if espada.tempoAteDesaparecer > 0 then
+      espada.tempoAteDesaparecer = espada.tempoAteDesaparecer - 1
+    else
+      espada.visivel = false
+    end
+  end
 end
 
 function atualizaAnimacaoJogador()
@@ -160,6 +209,10 @@ function desenhaJogador()
   local quadroDeAnimacao = math.floor(jogador.quadroDeAnimacao)
   jogador.sprite = AnimacaoJogador[jogador.direcao][quadroDeAnimacao].sprite
   desenhaObjeto(jogador)
+
+  if espada.visivel then
+    desenhaObjeto(espada)
+  end
 end
 
 function desenhaObjeto(objeto)
@@ -356,6 +409,22 @@ function criaInimigo(coluna, linha)
     tipo = Constantes.TIPO_INIMIGO,
   }
   return inimigo
+end
+
+function fazAtaque()
+  if not espada.visivel then
+    sfx(
+      Constantes.ID_SOM_ESPADA,
+      86, -- número da nota (12 notas por oitava)
+      15, -- duracao em quadros
+      0,  -- canal
+      8,  -- volume
+      2   -- velocidade
+    )
+
+    espada.tempoAteDesaparecer = 15
+    espada.visivel = true
+  end
 end
 
 inicializa()
