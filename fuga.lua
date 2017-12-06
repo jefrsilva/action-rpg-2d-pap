@@ -7,10 +7,12 @@ Constantes = {
   SPRITE_JOGADOR =  256,
   SPRITE_CHAVE = 364,
   SPRITE_PORTA = 366,
+  SPRITE_INIMIGO = 292,
 
   TIPO_JOGADOR = "JOGADOR",
   TIPO_CHAVE = "CHAVE",
   TIPO_PORTA = "PORTA",
+  TIPO_INIMIGO = "INIMIGO",
 
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
 
@@ -94,6 +96,9 @@ function inicializa()
 
   local porta = criaPorta(28, 7)
   table.insert(objetos, porta)
+
+  local inimigo = criaInimigo(38, 7)
+  table.insert(objetos, inimigo)
 end
 
 function TIC()
@@ -325,6 +330,17 @@ function criaPorta(coluna, linha)
     tipo = Constantes.TIPO_PORTA
   }
   return porta
+end
+
+function criaInimigo(coluna, linha)
+  local inimigo = {
+    sprite = Constantes.SPRITE_INIMIGO,
+    corTransparente = 14,
+    x = (coluna * 8) + 8,
+    y = (linha * 8) + 8,
+    tipo = Constantes.TIPO_INIMIGO,
+  }
+  return inimigo
 end
 
 inicializa()
