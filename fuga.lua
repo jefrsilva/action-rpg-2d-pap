@@ -16,7 +16,10 @@ Constantes = {
   TIPO_INIMIGO = "INIMIGO",
   TIPO_ESPADA = "ESPADA",
 
+  VELOCIDADE_INIMIGO = 0.5,
+
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
+  VELOCIDADE_ANIMACAO_INIMIGO = 0.2,
 
   ID_SOM_CHAVE = 0,
   ID_SOM_PORTA = 2,
@@ -57,6 +60,25 @@ AnimacaoJogador = {
   }
 }
 
+AnimacaoInimigo = {
+  { -- andando pra cima
+    {sprite = 288},
+    {sprite = 290}
+  },
+  { -- andando pra baixo
+    {sprite = 292},
+    {sprite = 294}
+  },
+  { -- andando pra esquerda
+    {sprite = 296},
+    {sprite = 298}
+  },
+  { -- andando pra direita
+    {sprite = 300},
+    {sprite = 302}
+  },
+}
+
 DadosDaEspada = {
   { -- ataque para cima (indice 1)
     x = 0, y = -16, sprite = 324
@@ -70,6 +92,11 @@ DadosDaEspada = {
   { -- ataque para direita (indice 4)
     x = 16, y = 0, sprite = 328
   }
+}
+
+Estado = {
+  PARADO = "PARADO",
+  PERSEGUINDO = "PERSEGUINDO",
 }
 
 function inicializa()
@@ -109,6 +136,11 @@ function inicializa()
       INIMIGO = fazColisaoEspadaComInimigo,
       ESPADA = nil
     }
+  }
+
+  funcaoDeEstado = {
+    PARADO = atualizaEstadoParado,
+    PERSEGUINDO = atualizaEstadoPerseguindo,
   }
 
   resetaJogo()
@@ -163,6 +195,84 @@ function atualiza()
 
   camera.x = (jogador.x // 240) * 240
   camera.y = (jogador.y // 136) * 136
+
+  for indice, objeto in pairs(objetos) do
+    if objeto.tipo == Constantes.TIPO_INIMIGO then
+      atualizaInimigo(objeto)
+    end
+  end
+end
+
+function atualizaInimigo(inimigo)
+  local quadroDeAnimacao = math.floor(inimigo.quadroDeAnimacao)
+  inimigo.sprite = AnimacaoInimigo[inimigo.direcao][quadroDeAnimacao].sprite
+
+  local atualizaEstado = funcaoDeEstado[inimigo.estado]
+  atualizaEstado(inimigo)
+end
+
+function atualizaEstadoParado(inimigo)
+  if jogadorEstaPerto(inimigo) then
+    inimigo.estado = Estado.PERSEGUINDO
+  end
+end
+
+function atualizaEstadoPerseguindo(inimigo)
+  if not jogadorEstaPerto(inimigo) then
+    inimigo.estado = Estado.PARADO
+    return
+  end
+
+  local deltaX = jogador.x - inimigo.x
+  local deltaY = jogador.y - inimigo.y
+
+  -- normalizando os deltas para facilitar escolher a velocidade
+  if math.abs(deltaX) > 0.0 then
+    deltaX = deltaX / math.abs(deltaX)
+  end
+  if math.abs(deltaY) > 0.0 then
+    deltaY = deltaY / math.abs(deltaY)
+  end
+
+  if not temColisao(inimigo, deltaX, 0) then
+    inimigo.x = inimigo.x + deltaX * Constantes.VELOCIDADE_INIMIGO
+    if (deltaX < 0.0) then
+      inimigo.direcao = Constantes.ESQUERDA
+    else
+      inimigo.direcao = Constantes.DIREITA
+    end
+  end
+  if not temColisao(inimigo, 0, deltaY) then
+    inimigo.y = inimigo.y + deltaY * Constantes.VELOCIDADE_INIMIGO
+    if (deltaY < 0.0) then
+      inimigo.direcao = Constantes.CIMA
+    else
+      inimigo.direcao = Constantes.BAIXO
+    end
+  end
+  atualizaAnimacaoInimigo(inimigo)
+end
+
+function atualizaAnimacaoInimigo(inimigo)
+  inimigo.quadroDeAnimacao = inimigo.quadroDeAnimacao + Constantes.VELOCIDADE_ANIMACAO_INIMIGO
+  if inimigo.quadroDeAnimacao >= 3 then
+    inimigo.quadroDeAnimacao = inimigo.quadroDeAnimacao - 2
+  end
+end
+
+function jogadorEstaPerto(inimigo)
+  local distanciaParaOJogador = calculaDistancia(jogador, inimigo)
+  if distanciaParaOJogador > 12 and distanciaParaOJogador < 48 then
+    return true
+  end
+  return false
+end
+
+function calculaDistancia(objetoA, objetoB)
+  local deltaX = objetoA.x - objetoB.x
+  local deltaY = objetoA.y - objetoB.y
+
+  return math.sqrt(deltaX * deltaX + deltaY * deltaY)
 end
 
 function atualizaJogador()
@@ -426,6 +536,9 @@ function criaInimigo(coluna, linha)
     x = (coluna * 8) + 8,
     y = (linha * 8) + 8,
     tipo = Constantes.TIPO_INIMIGO,
+    estado = Estado.PARADO,
+    direcao = Constantes.BAIXO,
+    quadroDeAnimacao = 1
   }
   return inimigo
 end
