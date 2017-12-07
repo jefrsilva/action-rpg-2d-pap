@@ -9,6 +9,8 @@ Constantes = {
   SPRITE_PORTA = 366,
   SPRITE_INIMIGO = 292,
   SPRITE_ESPADA = 320,
+  SPRITE_TITULO = 352,
+  SPRITE_ALURA = 416,
 
   TIPO_JOGADOR = "JOGADOR",
   TIPO_CHAVE = "CHAVE",
@@ -24,6 +26,7 @@ Constantes = {
   ID_SOM_CHAVE = 0,
   ID_SOM_PORTA = 2,
   ID_SOM_ESPADA = 3,
+  ID_SOM_INICIO = 5,
 
   CIMA = 1,
   BAIXO = 2,
@@ -31,7 +34,13 @@ Constantes = {
   DIREITA = 4,
 
   MAPA_LARGURA_TELA = 30,
-  MAPA_ALTURA_TELA = 17
+  MAPA_ALTURA_TELA = 17,
+
+  TITULO_LARGURA = 12,
+  TITULO_ALTURA = 4,
+
+  ALURA_LARGURA = 7,
+  ALURA_ALTURA = 3,
 }
 
 Direcao = {
@@ -99,6 +108,11 @@ Estado = {
   PERSEGUINDO = "PERSEGUINDO",
 }
 
+Tela = {
+  TITULO = "TITULO",
+  JOGO = "JOGO"
+}
+
 function inicializa()
   funcaoDeColisao = {
     JOGADOR = {
@@ -143,7 +157,21 @@ function inicializa()
     PERSEGUINDO = atualizaEstadoPerseguindo,
   }
 
+  funcoesDaTela = {
+    TITULO = {
+      funcaoDeAtualizacao = atualizaTelaDeTitulo,
+      funcaoDeDesenho = desenhaTelaDeTitulo
+    },
+    JOGO = {
+      funcaoDeAtualizacao = atualizaTelaDeJogo,
+      funcaoDeDesenho = desenhaTelaDeJogo
+    }
+  }
+
   resetaJogo()
+  telaAtual = Tela.TITULO
+  proximaTela = nil
+  tempoAteTrocarDeTela = 0
 end
 
 function resetaJogo()
@@ -191,6 +219,37 @@ function TIC()
 end
 
 function atualiza()
+  local funcaoDeAtualizacao = funcoesDaTela[telaAtual].funcaoDeAtualizacao
+  funcaoDeAtualizacao()
+
+  if proximaTela ~= nil then
+    if tempoAteTrocarDeTela > 0 then
+      tempoAteTrocarDeTela = tempoAteTrocarDeTela - 1
+    else
+      telaAtual = proximaTela
+      proximaTela = nil
+    end
+  end
+end
+
+function atualizaTelaDeTitulo()
+  if btn(4) then
+    sfx(
+      Constantes.ID_SOM_INICIO,
+      72, -- número da nota (12 notas por oitava)
+      32, -- duracao em quadros
+      0,  -- canal
+      8,  -- volume
+      0   -- velocidade
+    )
+
+    resetaJogo()
+    proximaTela = Tela.JOGO
+    tempoAteTrocarDeTela = 90
+  end
+end
+
+function atualizaTelaDeJogo()
   atualizaJogador()
 
   camera.x = (jogador.x // 240) * 240
@@ -322,11 +381,53 @@ end
 
 function desenha()
   cls() -- limpa a tela, pode passar uma cor como parâmetro
+
+  local funcaoDeDesenho = funcoesDaTela[telaAtual].funcaoDeDesenho
+  funcaoDeDesenho()
+end
+
+function desenhaTelaDeJogo()
   desenhaMapa()
   for indice, objeto in pairs(objetos) do
     desenhaObjeto(objeto)
   end
   desenhaJogador()
+end
+
+function desenhaTelaDeTitulo()
+  -- Desenha título do jogo
+  spr(
+    Constantes.SPRITE_TITULO,
+    80, -- posicao X
+    12, -- posicao Y
+    1,  -- cor transparente
+    1,  -- escala
+    0,  -- sem espelhar
+    0,  -- sem rotacionar
+    Constantes.TITULO_LARGURA,  -- largura em blocos
+    Constantes.TITULO_ALTURA    -- altura em blocos
+  )
+
+  desenhaTexto("Pressione Z para iniciar", 56, 64, 15)
+
+  -- Desenha logo da Alura
+  spr(
+    Constantes.SPRITE_ALURA,
+    94,  -- posicao X
+    92, -- posicao Y
+    1,  -- cor transparente
+    1,  -- escala
+    0,  -- sem espelhar
+    0,  -- sem rotacionar
+    Constantes.ALURA_LARGURA,  -- largura em blocos
+    Constantes.ALURA_ALTURA    -- altura em blocos
+  )
+
+  desenhaTexto("www.alura.com.br", 78, 122, 15)
+end
+
+function desenhaTexto(texto, x, y, cor)
+  print(texto, x, y, cor)
 end
 
 function desenhaJogador()
