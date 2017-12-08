@@ -27,6 +27,7 @@ Constantes = {
   ID_SOM_PORTA = 2,
   ID_SOM_ESPADA = 3,
   ID_SOM_INICIO = 5,
+  ID_SOM_FINAL = 6,
 
   CIMA = 1,
   BAIXO = 2,
@@ -110,7 +111,8 @@ Estado = {
 
 Tela = {
   TITULO = "TITULO",
-  JOGO = "JOGO"
+  JOGO = "JOGO",
+  FINAL = "FINAL"
 }
 
 function inicializa()
@@ -165,6 +167,10 @@ function inicializa()
     JOGO = {
       funcaoDeAtualizacao = atualizaTelaDeJogo,
       funcaoDeDesenho = desenhaTelaDeJogo
+    },
+    FINAL = {
+      funcaoDeAtualizacao = atualizaTelaDeFinal,
+      funcaoDeDesenho = desenhaTelaDeFinal
     }
   }
 
@@ -172,6 +178,11 @@ function inicializa()
   telaAtual = Tela.TITULO
   proximaTela = nil
   tempoAteTrocarDeTela = 0
+
+  posicaoDaSaida = {
+    x = (55 * 8) + 8,
+    y = (6 * 8) + 8
+  }
 end
 
 function resetaJogo()
@@ -233,24 +244,41 @@ function atualiza()
 end
 
 function atualizaTelaDeTitulo()
-  if btn(4) then
-    sfx(
-      Constantes.ID_SOM_INICIO,
-      72, -- número da nota (12 notas por oitava)
-      32, -- duracao em quadros
-      0,  -- canal
-      8,  -- volume
-      0   -- velocidade
-    )
+  if proximaTela == nil then
+    if btn(4) then
+      sfx(
+        Constantes.ID_SOM_INICIO,
+        72, -- número da nota (12 notas por oitava)
+        32, -- duracao em quadros
+        0,  -- canal
+        8,  -- volume
+        0   -- velocidade
+      )
 
-    resetaJogo()
-    proximaTela = Tela.JOGO
-    tempoAteTrocarDeTela = 90
+      resetaJogo()
+      proximaTela = Tela.JOGO
+      tempoAteTrocarDeTela = 90
+    end
   end
 end
 
 function atualizaTelaDeJogo()
-  atualizaJogador()
+  if proximaTela == nil then
+    atualizaJogador()
+    if jogador.x == posicaoDaSaida.x and jogador.y == posicaoDaSaida.y then
+      sfx(
+        Constantes.ID_SOM_FINAL,
+        36, -- número da nota (12 notas por oitava)
+        32, -- duracao em quadros
+        0,  -- canal
+        8,  -- volume
+        0   -- velocidade
+      )
+
+      proximaTela = Tela.FINAL
+      tempoAteTrocarDeTela = 60
+    end
+  end
 
   camera.x = (jogador.x // 240) * 240
   camera.y = (jogador.y // 136) * 136
@@ -258,6 +286,15 @@ function atualizaTelaDeJogo()
   for indice, objeto in pairs(objetos) do
     if objeto.tipo == Constantes.TIPO_INIMIGO then
       atualizaInimigo(objeto)
+    end
+  end
+end
+
+function atualizaTelaDeFinal()
+  if proximaTela == nil then
+    if btn(4) then
+      proximaTela = Tela.TITULO
+      tempoAteTransicao = 15
     end
   end
 end
@@ -335,6 +372,8 @@ function calculaDistancia(objetoA, objetoB)
 end
 
 function atualizaJogador()
+  temColisao(jogador, 0, 0) -- para verificar se tem colisao com algum inimigo
+
   local direcao = {
     Constantes.CIMA,
     Constantes.BAIXO,
@@ -424,6 +463,11 @@ function desenhaTelaDeTitulo()
   )
 
   desenhaTexto("www.alura.com.br", 78, 122, 15)
+end
+
+function desenhaTelaDeFinal()
+  desenhaTexto("Voce conseguiu escapar!", 56, 40, 15)
+  desenhaTexto("Pressione Z para reiniciar", 48, 86, 15 )
 end
 
 function desenhaTexto(texto, x, y, cor)
