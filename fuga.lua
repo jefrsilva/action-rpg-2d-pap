@@ -34,6 +34,13 @@ Constantes = {
   ESQUERDA = 3,
   DIREITA = 4,
 
+  BLOCOID_CHAVE = 224,
+  BLOCOID_PORTA = 225,
+  BLOCOID_INIMIGO = 226,
+
+  MAPA_LARGURA_TOTAL = 240,
+  MAPA_ALTURA_TOTAL = 136,
+
   MAPA_LARGURA_TELA = 30,
   MAPA_ALTURA_TELA = 17,
 
@@ -128,12 +135,12 @@ function inicializa()
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
-      INIMIGO = nil,
       ESPADA = nil
     },
     PORTA = {
       JOGADOR = nil,
       CHAVE = nil,
+      INIMIGO = nil,
       PORTA = nil,
       INIMIGO = nil,
       ESPADA = nil
@@ -174,7 +181,6 @@ function inicializa()
     }
   }
 
-  resetaJogo()
   telaAtual = Tela.TITULO
   proximaTela = nil
   tempoAteTrocarDeTela = 0
@@ -183,6 +189,9 @@ function inicializa()
     x = (55 * 8) + 8,
     y = (6 * 8) + 8
   }
+
+  objetosIniciais = {}
+  leObjetosDoMapa()
 end
 
 function resetaJogo()
@@ -214,14 +223,57 @@ function resetaJogo()
     y = 0
   }
 
-  local chave = criaChave(3, 3)
-  table.insert(objetos, chave)
+  criaObjetosIniciais()
+end
 
-  local porta = criaPorta(28, 7)
-  table.insert(objetos, porta)
+function leObjetosDoMapa()
+  for linha = 0, Constantes.MAPA_ALTURA_TOTAL do
+    for coluna = 0, Constantes.MAPA_LARGURA_TOTAL do
+      local blocoId = mget(coluna, linha)
+      -- pra não ter que fazer vários ifs, só verifica se é um marcador
+      if blocoEhMarcador(blocoId) then
+        mset(coluna, linha, 0)
+        local objeto = {
+          blocoId = blocoId,
+          coluna = coluna,
+          linha = linha
+        }
+        -- coloca em outra tabela de objetos iniciais
+        table.insert(objetosIniciais, objeto)
+      end
+    end
+  end
+end
 
-  local inimigo = criaInimigo(38, 7)
-  table.insert(objetos, inimigo)
+function blocoEhMarcador(blocoId)
+  if blocoId == Constantes.BLOCOID_CHAVE
+    or blocoId == Constantes.BLOCOID_PORTA
+    or blocoId == Constantes.BLOCOID_INIMIGO then
+    return true
+  end
+  return false
+end
+
+function criaObjetosIniciais()
+  objetos = {}
+  for indice, objetoACriar in pairs(objetosIniciais) do
+    local objeto = criaObjeto(objetoACriar)
+    if objeto ~= nil then
+      table.insert(objetos, objeto)
+    end
+  end
+end
+
+function criaObjeto(objetoACriar)
+  local objeto = nil
+  if objetoACriar.blocoId == Constantes.BLOCOID_CHAVE then
+    objeto = criaChave(objetoACriar.coluna, objetoACriar.linha)
+  elseif objetoACriar.blocoId == Constantes.BLOCOID_PORTA then
+    objeto = criaPorta(objetoACriar.coluna, objetoACriar.linha)
+  elseif objetoACriar.blocoId == Constantes.BLOCOID_INIMIGO then
+    objeto = criaInimigo(objetoACriar.coluna, objetoACriar.linha)
+  end
+  return objeto
 end
 
 function TIC()
@@ -652,7 +704,7 @@ function blocoEhParede(blocoId)
   return false
 end
 
-function criaChave(linha, coluna)
+function criaChave(coluna, linha)
   local chave = {
     sprite = Constantes.SPRITE_CHAVE,
     corTransparente = 6,
