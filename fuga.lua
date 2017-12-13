@@ -41,8 +41,8 @@ Constantes = {
   MAPA_LARGURA_TOTAL = 240,
   MAPA_ALTURA_TOTAL = 136,
 
-  MAPA_LARGURA_TELA = 30,
-  MAPA_ALTURA_TELA = 17,
+  MAPA_LARGURA_TELA = 31,
+  MAPA_ALTURA_TELA = 18,
 
   TITULO_LARGURA = 12,
   TITULO_ALTURA = 4,
@@ -334,8 +334,8 @@ function atualizaTelaDeJogo()
     end
   end
 
-  camera.x = (jogador.x // 240) * 240
-  camera.y = (jogador.y // 136) * 136
+  camera.x = jogador.x-120
+  camera.y = jogador.y-68
 
   for indice, objeto in pairs(objetos) do
     if objeto.tipo == Constantes.TIPO_INIMIGO then
@@ -592,8 +592,8 @@ function desenhaMapa()
     blocoY, -- coordenada y do bloco inicial
     Constantes.MAPA_LARGURA_TELA, -- largura do mapa em blocos
     Constantes.MAPA_ALTURA_TELA,  -- altura do mapa em blocos
-    0, -- posicao x de onde o mapa vai ser desenhado
-    0  -- posicao y de onde o mapa vai ser desenhado
+    -(camera.x % 8), -- posicao x de onde o mapa vai ser desenhado
+    -(camera.y % 8)  -- posicao y de onde o mapa vai ser desenhado
   )
 end
 
