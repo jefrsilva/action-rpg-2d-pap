@@ -26,6 +26,7 @@ Constantes = {
   ID_SOM_CHAVE = 0,
   ID_SOM_PORTA = 2,
   ID_SOM_ESPADA = 3,
+  ID_SOM_JOGADOR_ATINGIDO = 4,
   ID_SOM_INICIO = 5,
   ID_SOM_FINAL = 6,
 
@@ -124,6 +125,8 @@ Tela = {
 }
 
 function inicializa()
+  quadroDoJogo = 0
+
   funcaoDeColisao = {
     JOGADOR = {
       JOGADOR = nil,
@@ -207,7 +210,9 @@ function resetaJogo()
     direcao = Constantes.BAIXO,
     quadroDeAnimacao = 1,
     tipo = Constantes.TIPO_JOGADOR,
-    chaves = 0
+    chaves = 0,
+    vida = 5,
+    tempoInvulneravel = 0,
   }
 
   espada = {
@@ -284,6 +289,8 @@ function TIC()
 end
 
 function atualiza()
+  quadroDoJogo = quadroDoJogo + 1
+
   local funcaoDeAtualizacao = funcoesDaTela[telaAtual].funcaoDeAtualizacao
   funcaoDeAtualizacao()
 
@@ -457,6 +464,10 @@ function calculaDistancia(objetoA, objetoB)
 end
 
 function atualizaJogador()
+  if jogador.tempoInvulneravel > 0 then
+    jogador.tempoInvulneravel = jogador.tempoInvulneravel - 1
+  end
+
   temColisao(jogador, 0, 0) -- para verificar se tem colisao com algum inimigo
 
   local direcao = {
@@ -560,9 +571,23 @@ function desenhaTexto(texto, x, y, cor)
 end
 
 function desenhaJogador()
-  local quadroDeAnimacao = math.floor(jogador.quadroDeAnimacao)
-  jogador.sprite = AnimacaoJogador[jogador.direcao][quadroDeAnimacao].sprite
-  desenhaObjeto(jogador)
+  if jogador.vida <= 0 then
+    return
+  end
+
+  local desenha = true
+
+  if jogador.tempoInvulneravel > 0 then
+    if ((jogador.tempoInvulneravel // 8) % 2) == 0 then
+      desenha = false
+    end
+  end
+
+  if desenha then
+    local quadroDeAnimacao = math.floor(jogador.quadroDeAnimacao)
+    jogador.sprite = AnimacaoJogador[jogador.direcao][quadroDeAnimacao].sprite
+    desenhaObjeto(jogador)
+  end
 
   if espada.visivel then
     desenhaObjeto(espada)
@@ -712,7 +737,24 @@ function fazColisaoJogadorComPorta(jogador, porta, indiceDaPorta)
 end
 
 function fazColisaoJogadorComInimigo(jogador, inimigo, indiceDoInimigo)
-  resetaJogo()
+  if jogador.tempoInvulneravel == 0 then
+    sfx(
+      Constantes.ID_SOM_JOGADOR_ATINGIDO,
+      48, -- número da nota (12 notas por oitava)
+      15, -- duracao em quadros
+      0,  -- canal
+      8,  -- volume
+      2   -- velocidade
+    )
+
+    jogador.tempoInvulneravel = 60
+    jogador.vida = jogador.vida - 1
+    if jogador.vida <= 0 then
+      proximaTela = Tela.TITULO
+      tempoAteTrocarDeTela = 120
+    end
+  end
+  return false
 end
 
 function fazColisaoEspadaComInimigo(espada, inimigo, indiceDoInimigo)
