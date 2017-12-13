@@ -113,7 +113,8 @@ DadosDaEspada = {
 
 Estado = {
   PARADO = "PARADO",
-  PERSEGUINDO = "PERSEGUINDO",
+  ANDANDO = "ANDANDO",
+  PERSEGUINDO = "PERSEGUINDO"
 }
 
 Tela = {
@@ -163,6 +164,7 @@ function inicializa()
 
   funcaoDeEstado = {
     PARADO = atualizaEstadoParado,
+    ANDANDO = atualizaEstadoAndando,
     PERSEGUINDO = atualizaEstadoPerseguindo,
   }
 
@@ -362,6 +364,37 @@ end
 function atualizaEstadoParado(inimigo)
   if jogadorEstaPerto(inimigo) then
     inimigo.estado = Estado.PERSEGUINDO
+    return
+  end
+
+  if inimigo.tempoDeEspera > 0 then
+    inimigo.tempoDeEspera = inimigo.tempoDeEspera - 1
+  else
+    local indiceDirecao = math.random(1, 4)
+    inimigo.direcao = indiceDirecao
+    inimigo.distanciaParaAndar = math.random(16, 64)
+    inimigo.estado = Estado.ANDANDO
+  end
+end
+
+function atualizaEstadoAndando(inimigo)
+  if jogadorEstaPerto(inimigo) then
+    inimigo.estado = Estado.PERSEGUINDO
+    return
+  end
+
+  if inimigo.distanciaParaAndar > 0 then
+    inimigo.distanciaParaAndar = inimigo.distanciaParaAndar - 1
+    if temColisao(inimigo, Direcao[inimigo.direcao].deltaX, Direcao[inimigo.direcao].deltaY) then
+      inimigo.distanciaParaAndar = 0
+    else
+      inimigo.x = inimigo.x + Direcao[inimigo.direcao].deltaX * 0.5
+      inimigo.y = inimigo.y + Direcao[inimigo.direcao].deltaY * 0.5
+      atualizaAnimacaoInimigo(inimigo)
+    end
+  else
+    inimigo.tempoDeEspera = math.random(30) + 15
+    inimigo.estado = Estado.PARADO
   end
 end
 
@@ -734,6 +767,7 @@ function criaInimigo(coluna, linha)
     y = (linha * 8) + 8,
     tipo = Constantes.TIPO_INIMIGO,
     estado = Estado.PARADO,
+    tempoDeEspera = 0,
     direcao = Constantes.BAIXO,
     quadroDeAnimacao = 1
   }
