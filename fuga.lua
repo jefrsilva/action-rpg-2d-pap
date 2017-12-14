@@ -13,6 +13,7 @@ Constantes = {
   SPRITE_ALURA = 416,
   SPRITE_CORACAO_CHEIO = 412,
   SPRITE_CORACAO_VAZIO = 396,
+  SPRITE_CHAVE_PEQUENA = 398,
 
   TIPO_JOGADOR = "JOGADOR",
   TIPO_CHAVE = "CHAVE",
@@ -534,6 +535,11 @@ function desenhaTelaDeJogo()
 end
 
 function desenhaInterfaceDoUsuario()
+  desenhaMostradorDeVida()
+  desenhaMostradorDeChaves()
+end
+
+function desenhaMostradorDeVida()
   desenhaTexto("Vida", 4, 4, 15)
   for coracao=1, jogador.vidaMaxima do
     local sprite = Constantes.SPRITE_CORACAO_VAZIO
@@ -543,6 +549,23 @@ function desenhaInterfaceDoUsuario()
     spr(
       sprite,
       24 + coracao * 10, -- cada coracao tem 9px de largura
+      3,
+      1,  -- cor transparente
+      1,  -- escala
+      0,  -- sem espelhar
+      0,  -- sem rotacionar
+      2,  -- largura em blocos
+      1   -- altura em blocos
+    )
+  end
+end
+
+function desenhaMostradorDeChaves()
+  desenhaTexto("Chaves", 148, 4, 15)
+  for chave=1, jogador.chaves do
+    spr(
+      Constantes.SPRITE_CHAVE_PEQUENA,
+      180 + chave * 10,
       3,
       1,  -- cor transparente
       1,  -- escala
