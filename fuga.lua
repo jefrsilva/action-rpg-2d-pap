@@ -22,12 +22,14 @@ Constantes = {
   TIPO_ESPADA = "ESPADA",
 
   VELOCIDADE_INIMIGO = 0.5,
+  VELOCIDADE_EMPURRAO = 2,
 
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
   VELOCIDADE_ANIMACAO_INIMIGO = 0.2,
   VELOCIDADE_ANIMACAO_ESPADA = 0.45,
 
   ID_SOM_CHAVE = 0,
+  ID_SOM_INIMIGO_ATINGIDO = 1,
   ID_SOM_PORTA = 2,
   ID_SOM_ESPADA = 3,
   ID_SOM_JOGADOR_ATINGIDO = 4,
@@ -135,7 +137,8 @@ DadosDaEspada = {
 Estado = {
   PARADO = "PARADO",
   ANDANDO = "ANDANDO",
-  PERSEGUINDO = "PERSEGUINDO"
+  PERSEGUINDO = "PERSEGUINDO",
+  ATINGIDO = "ATINGIDO"
 }
 
 Tela = {
@@ -189,6 +192,7 @@ function inicializa()
     PARADO = atualizaEstadoParado,
     ANDANDO = atualizaEstadoAndando,
     PERSEGUINDO = atualizaEstadoPerseguindo,
+    ATINGIDO = atualizaEstadoAtingido
   }
 
   funcoesDaTela = {
@@ -460,6 +464,21 @@ function atualizaEstadoPerseguindo(inimigo)
     end
   end
   atualizaAnimacaoInimigo(inimigo)
+end
+
+function atualizaEstadoAtingido(inimigo)
+  if not temColisao(inimigo, inimigo.direcaoEmpurrao.deltaX, 0) then
+    inimigo.x = inimigo.x + inimigo.direcaoEmpurrao.deltaX
+  end
+  if not temColisao(inimigo, 0, inimigo.direcaoEmpurrao.deltaY) then
+    inimigo.y = inimigo.y + inimigo.direcaoEmpurrao.deltaY
+  end
+
+  inimigo.distanciaEmpurrao = inimigo.distanciaEmpurrao - 1
+  if inimigo.distanciaEmpurrao <= 0 then
+    inimigo.estado = Estado.PARADO
+    inimigo.tempoDeEspera = 15
+  end
 end
 
 function atualizaAnimacaoInimigo(inimigo)
@@ -835,7 +854,32 @@ function fazColisaoJogadorComInimigo(jogador, inimigo, indiceDoInimigo)
 end
 
 function fazColisaoEspadaComInimigo(espada, inimigo, indiceDoInimigo)
-  table.remove(objetos, indiceDoInimigo)
+  if inimigo.estado ~= Estado.ATINGIDO then
+    sfx(
+      Constantes.ID_SOM_INIMIGO_ATINGIDO,
+      24, -- número da nota (12 notas por oitava)
+      15, -- duracao em quadros
+      0,  -- canal
+      8,  -- volume
+      0   -- velocidade
+    )
+
+    local deltaXEmpurrao = inimigo.x - jogador.x
+    local deltaYEmpurrao = inimigo.y - jogador.y
+    local distancia = calculaDistancia(jogador, inimigo)
+
+    deltaXEmpurrao = (deltaXEmpurrao / distancia) * Constantes.VELOCIDADE_EMPURRAO
+    deltaYEmpurrao = (deltaYEmpurrao / distancia) * Constantes.VELOCIDADE_EMPURRAO
+
+    inimigo.direcaoEmpurrao = {deltaX = deltaXEmpurrao, deltaY = deltaYEmpurrao}
+    inimigo.distanciaEmpurrao = 16
+
+    inimigo.estado = Estado.ATINGIDO
+    inimigo.vida = inimigo.vida - 1
+    if inimigo.vida == 0 then
+      table.remove(objetos, indiceDoInimigo)
+    end
+  end
   return false
 end
 
@@ -888,7 +932,8 @@ function criaInimigo(coluna, linha)
     estado = Estado.PARADO,
     tempoDeEspera = 0,
     direcao = Constantes.BAIXO,
-    quadroDeAnimacao = 1
+    quadroDeAnimacao = 1,
+    vida = 3
   }
   return inimigo
 end
