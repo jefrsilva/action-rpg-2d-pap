@@ -25,6 +25,7 @@ Constantes = {
 
   VELOCIDADE_ANIMACAO_JOGADOR = 0.2,
   VELOCIDADE_ANIMACAO_INIMIGO = 0.2,
+  VELOCIDADE_ANIMACAO_ESPADA = 0.45,
 
   ID_SOM_CHAVE = 0,
   ID_SOM_PORTA = 2,
@@ -101,17 +102,33 @@ AnimacaoInimigo = {
 }
 
 DadosDaEspada = {
-  { -- ataque para cima (indice 1)
-    x = 0, y = -16, sprite = 324
+  { -- ataque para cima
+    {x = -16, y = 0, sprite = 320},
+    {x = -12, y = -12, sprite = 322},
+    {x = 0, y = -16, sprite = 324},
+    {x = 12, y = -12, sprite = 326},
+    {x = 16, y = 0, sprite = 328}
   },
-  { -- ataque para baixo (indice 2)
-    x = 0, y = 16, sprite = 332
+  { -- ataque para baixo
+    {x = 16, y = 0, sprite = 328},
+    {x = 12, y = 12, sprite = 330},
+    {x = 0, y = 16, sprite = 332},
+    {x = -12, y = 12, sprite = 334},
+    {x = -16, y = 0, sprite = 320}
   },
-  { -- ataque para esquerda (indice 3)
-    x = -16, y = 0, sprite = 320
+  { -- ataque para esquerda
+    {x = 0, y = 16, sprite = 332},
+    {x = -12, y = 12, sprite = 334},
+    {x = -16, y = 0, sprite = 320},
+    {x = -12, y = -12, sprite = 322},
+    {x = 0, y = -16, sprite = 324}
   },
-  { -- ataque para direita (indice 4)
-    x = 16, y = 0, sprite = 328
+  { -- ataque para direita
+    {x = 0, y = -16, sprite = 324},
+    {x = 12, y = -12, sprite = 326},
+    {x = 16, y = 0, sprite = 328},
+    {x = 12, y = 12, sprite = 330},
+    {x = 0, y = 16, sprite = 332}
   }
 }
 
@@ -226,7 +243,7 @@ function resetaJogo()
     corTransparente = 0,
     tipo = Constantes.TIPO_ESPADA,
     visivel = false,
-    tempoAteDesaparecer = 0
+    esperaDoAtaque = 0
   }
 
   camera = {
@@ -497,18 +514,24 @@ function atualizaJogador()
 end
 
 function atualizaEspada()
+  if espada.esperaDoAtaque > 0 then
+    espada.esperaDoAtaque = espada.esperaDoAtaque - 1
+  end
+
   if espada.visivel then
-    espada.x = jogador.x + DadosDaEspada[jogador.direcao].x
-    espada.y = jogador.y + DadosDaEspada[jogador.direcao].y
-    espada.sprite = DadosDaEspada[jogador.direcao].sprite
+    espada.quadroAtual = espada.quadroAtual + Constantes.VELOCIDADE_ANIMACAO_ESPADA
+    if espada.quadroAtual >= 6 then
+      espada.visivel = false
+      return
+    end
+
+    local quadroAtual = math.floor(espada.quadroAtual)
+    local quadroDeAnimacao = espada.quadrosDeAnimacao[quadroAtual]
+    espada.x = jogador.x + quadroDeAnimacao.x
+    espada.y = jogador.y + quadroDeAnimacao.y
+    espada.sprite = quadroDeAnimacao.sprite
 
     temColisao(espada, 0, 0)
-
-    if espada.tempoAteDesaparecer > 0 then
-      espada.tempoAteDesaparecer = espada.tempoAteDesaparecer - 1
-    else
-      espada.visivel = false
-    end
   end
 end
 
@@ -871,7 +894,7 @@ function criaInimigo(coluna, linha)
 end
 
 function fazAtaque()
-  if not espada.visivel then
+  if not espada.visivel and espada.esperaDoAtaque == 0 then
     sfx(
       Constantes.ID_SOM_ESPADA,
       86, -- número da nota (12 notas por oitava)
@@ -881,7 +904,9 @@ function fazAtaque()
       2   -- velocidade
     )
 
-    espada.tempoAteDesaparecer = 15
+    espada.esperaDoAtaque = 40
+    espada.quadrosDeAnimacao = DadosDaEspada[jogador.direcao]
+    espada.quadroAtual = 1
     espada.visivel = true
   end
 end
