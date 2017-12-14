@@ -11,6 +11,8 @@ Constantes = {
   SPRITE_ESPADA = 320,
   SPRITE_TITULO = 352,
   SPRITE_ALURA = 416,
+  SPRITE_CORACAO_CHEIO = 412,
+  SPRITE_CORACAO_VAZIO = 396,
 
   TIPO_JOGADOR = "JOGADOR",
   TIPO_CHAVE = "CHAVE",
@@ -212,6 +214,7 @@ function resetaJogo()
     tipo = Constantes.TIPO_JOGADOR,
     chaves = 0,
     vida = 5,
+    vidaMaxima = 5,
     tempoInvulneravel = 0,
   }
 
@@ -527,6 +530,28 @@ function desenhaTelaDeJogo()
     desenhaObjeto(objeto)
   end
   desenhaJogador()
+  desenhaInterfaceDoUsuario()
+end
+
+function desenhaInterfaceDoUsuario()
+  desenhaTexto("Vida", 4, 4, 15)
+  for coracao=1, jogador.vidaMaxima do
+    local sprite = Constantes.SPRITE_CORACAO_VAZIO
+    if coracao <= jogador.vida then
+      sprite = Constantes.SPRITE_CORACAO_CHEIO
+    end
+    spr(
+      sprite,
+      24 + coracao * 10, -- cada coracao tem 9px de largura
+      3,
+      1,  -- cor transparente
+      1,  -- escala
+      0,  -- sem espelhar
+      0,  -- sem rotacionar
+      2,  -- largura em blocos
+      1   -- altura em blocos
+    )
+  end
 end
 
 function desenhaTelaDeTitulo()
@@ -567,6 +592,12 @@ function desenhaTelaDeFinal()
 end
 
 function desenhaTexto(texto, x, y, cor)
+  -- contorno
+  print(texto, x-1, y, 0)
+  print(texto, x+1, y, 0)
+  print(texto, x, y-1, 0)
+  print(texto, x, y+1, 0)
+  -- texto
   print(texto, x, y, cor)
 end
 
