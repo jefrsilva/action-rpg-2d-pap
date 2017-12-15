@@ -11,6 +11,7 @@ Constantes = {
   SPRITE_ESPADA = 320,
   SPRITE_TITULO = 352,
   SPRITE_ALURA = 416,
+  SPRITE_VIDA = 428,
   SPRITE_CORACAO_CHEIO = 412,
   SPRITE_CORACAO_VAZIO = 396,
   SPRITE_CHAVE_PEQUENA = 398,
@@ -20,6 +21,7 @@ Constantes = {
   TIPO_PORTA = "PORTA",
   TIPO_INIMIGO = "INIMIGO",
   TIPO_ESPADA = "ESPADA",
+  TIPO_VIDA = "VIDA",
 
   VELOCIDADE_INIMIGO = 0.5,
   VELOCIDADE_EMPURRAO = 2,
@@ -35,6 +37,7 @@ Constantes = {
   ID_SOM_JOGADOR_ATINGIDO = 4,
   ID_SOM_INICIO = 5,
   ID_SOM_FINAL = 6,
+  ID_SOM_VIDA = 7,
 
   CIMA = 1,
   BAIXO = 2,
@@ -156,35 +159,48 @@ function inicializa()
       CHAVE = fazColisaoJogadorComChave,
       PORTA = fazColisaoJogadorComPorta,
       INIMIGO = fazColisaoJogadorComInimigo,
-      ESPADA = nil
+      ESPADA = nil,
+      VIDA = fazColisaoJogadorComVida
     },
     CHAVE = {
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
-      ESPADA = nil
+      INIMIGO = nil,
+      ESPADA = nil,
+      VIDA = nil
     },
     PORTA = {
       JOGADOR = nil,
       CHAVE = nil,
-      INIMIGO = nil,
       PORTA = nil,
       INIMIGO = nil,
-      ESPADA = nil
+      ESPADA = nil,
+      VIDA = nil
     },
     INIMIGO = {
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
       INIMIGO = nil,
-      ESPADA = nil
+      ESPADA = nil,
+      VIDA = nil
     },
     ESPADA = {
       JOGADOR = nil,
       CHAVE = nil,
       PORTA = nil,
       INIMIGO = fazColisaoEspadaComInimigo,
-      ESPADA = nil
+      ESPADA = nil,
+      VIDA = nil
+    },
+    VIDA = {
+      JOGADOR = nil,
+      CHAVE = nil,
+      PORTA = nil,
+      INIMIGO = nil,
+      ESPADA = nil,
+      VIDA = nil
     }
   }
 
@@ -853,6 +869,23 @@ function fazColisaoJogadorComInimigo(jogador, inimigo, indiceDoInimigo)
   return false
 end
 
+function fazColisaoJogadorComVida(jogador, vida, indiceDaVida)
+  if jogador.vida < jogador.vidaMaxima then
+    sfx(
+      Constantes.ID_SOM_VIDA,
+      48, -- número da nota (12 notas por oitava)
+      15, -- duracao em quadros
+      0,  -- canal
+      8,  -- volume
+      3   -- velocidade
+    )
+
+    jogador.vida = jogador.vida + 1
+    table.remove(objetos, indiceDaVida)
+  end
+  return false
+end
+
 function fazColisaoEspadaComInimigo(espada, inimigo, indiceDoInimigo)
   if inimigo.estado ~= Estado.ATINGIDO then
     sfx(
@@ -878,6 +911,12 @@ function fazColisaoEspadaComInimigo(espada, inimigo, indiceDoInimigo)
     inimigo.vida = inimigo.vida - 1
     if inimigo.vida == 0 then
       table.remove(objetos, indiceDoInimigo)
+
+      local probabilidade = math.random()
+      if probabilidade < 0.5 then
+        local vida = criaVida(inimigo.x, inimigo.y)
+        table.insert(objetos, vida)
+      end
     end
   end
   return false
@@ -936,6 +975,17 @@ function criaInimigo(coluna, linha)
     vida = 3
   }
   return inimigo
+end
+
+function criaVida(coordenadaX, coordenadaY)
+  local vida = {
+    sprite = Constantes.SPRITE_VIDA,
+    corTransparente = 14,
+    x = coordenadaX,
+    y = coordenadaY,
+    tipo = Constantes.TIPO_VIDA
+  }
+  return vida
 end
 
 function fazAtaque()
