@@ -649,7 +649,14 @@ function desenhaTelaDeTitulo()
     Constantes.TITULO_ALTURA    -- altura em blocos
   )
 
-  desenhaTexto("Pressione Z para iniciar", 56, 64, 15)
+  local desenhaInstrucoes = true
+  if proximaTela ~= nil and (quadroDoJogo // 4) % 2 == 0 then
+    desenhaInstrucoes = false
+  end
+
+  if desenhaInstrucoes then
+    desenhaTexto("Pressione Z para iniciar", 56, 64, 15)
+  end
 
   -- Desenha logo da Alura
   spr(
