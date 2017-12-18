@@ -47,6 +47,7 @@ Constantes = {
   BLOCOID_CHAVE = 224,
   BLOCOID_PORTA = 225,
   BLOCOID_INIMIGO = 226,
+  BLOCOID_SAIDA = 32,
 
   MAPA_LARGURA_TOTAL = 240,
   MAPA_ALTURA_TOTAL = 136,
@@ -230,11 +231,6 @@ function inicializa()
   proximaTela = nil
   tempoAteTrocarDeTela = 0
 
-  posicaoDaSaida = {
-    x = (55 * 8) + 8,
-    y = (6 * 8) + 8
-  }
-
   objetosIniciais = {}
   leObjetosDoMapa()
 end
@@ -279,7 +275,12 @@ function leObjetosDoMapa()
     for coluna = 0, Constantes.MAPA_LARGURA_TOTAL do
       local blocoId = mget(coluna, linha)
       -- pra não ter que fazer vários ifs, só verifica se é um marcador
-      if blocoEhMarcador(blocoId) then
+      if blocoEhSaida(blocoId) then
+        posicaoDaSaida = {
+          x = coluna * 8 + 8,
+          y = linha * 8 + 8
+        }
+      elseif blocoEhMarcador(blocoId) then
         mset(coluna, linha, 0)
         local objeto = {
           blocoId = blocoId,
@@ -291,6 +292,13 @@ function leObjetosDoMapa()
       end
     end
   end
+end
+
+function blocoEhSaida(blocoId)
+  if blocoId == Constantes.BLOCOID_SAIDA then
+    return true
+  end
+  return false
 end
 
 function blocoEhMarcador(blocoId)
